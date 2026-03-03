@@ -7,9 +7,10 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 interface TickerCardProps {
   ticker: Ticker;
   index: number;
+  onSelect?: (ticker: Ticker) => void;
 }
 
-const TickerCard = ({ ticker, index }: TickerCardProps) => {
+const TickerCard = ({ ticker, index, onSelect }: TickerCardProps) => {
   const isPositive = ticker.change >= 0;
 
   return (
@@ -17,7 +18,8 @@ const TickerCard = ({ ticker, index }: TickerCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.4 }}
-      className="glass rounded-xl p-3.5 space-y-3"
+      onClick={() => onSelect?.(ticker)}
+      className="glass rounded-xl p-3.5 space-y-3 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

@@ -3,11 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, ChevronDown, CheckCircle2 } from "lucide-react";
 import TickerCard from "@/components/TickerCard";
 import ScanningAnimation from "@/components/ScanningAnimation";
-import { mockTickers } from "@/data/tickers";
+import { mockTickers, Ticker } from "@/data/tickers";
 
 const SECTORS = ["All", "Technology", "Healthcare", "Finance", "Consumer"];
 
-const ScreenerView = () => {
+interface ScreenerViewProps {
+  onSelectTicker?: (ticker: Ticker) => void;
+}
+
+const ScreenerView = ({ onSelectTicker }: ScreenerViewProps) => {
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState("All");
   const [scanning, setScanning] = useState(true);
@@ -111,7 +115,7 @@ const ScreenerView = () => {
             {/* Ticker list */}
             <div className="flex-1 px-4 pb-6 space-y-2.5 overflow-y-auto">
               {filtered.map((ticker, i) => (
-                <TickerCard key={ticker.symbol} ticker={ticker} index={i} />
+                <TickerCard key={ticker.symbol} ticker={ticker} index={i} onSelect={onSelectTicker} />
               ))}
               {filtered.length === 0 && (
                 <motion.div
