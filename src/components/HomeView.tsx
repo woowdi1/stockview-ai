@@ -83,7 +83,7 @@ const HomeView = ({ onLaunchScreener }: HomeViewProps) => {
       >
         <div className="flex items-center justify-between mb-2.5">
           <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-            <Star className="w-3 h-3" /> Топ по score
+            <Star className="w-3 h-3" /> Ваш список наблюдения
           </span>
         </div>
         <div className="space-y-2">
