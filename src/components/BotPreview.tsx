@@ -64,7 +64,12 @@ const BotPreview = ({ onBack, onOpenMiniApp }: BotPreviewProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(2);
 
-  useEffect(() => {
+  const handleStart = () => {
+    setStarted(true);
+    setMessages([WELCOME_MESSAGE]);
+  };
+
+
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
