@@ -7,19 +7,41 @@ import {
   Star,
   Shield,
   Activity,
+  Crown,
 } from "lucide-react";
 import { mockTickers } from "@/data/tickers";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import ScoreBadge from "./ScoreBadge";
 
 interface HomeViewProps {
   onLaunchScreener: () => void;
+  onPaywall: () => void;
 }
 
 const topTickers = mockTickers.sort((a, b) => b.score - a.score).slice(0, 3);
 
-const HomeView = ({ onLaunchScreener }: HomeViewProps) => {
+const HomeView = ({ onLaunchScreener, onPaywall }: HomeViewProps) => {
+  const { isPro, subscription } = useSubscription();
+
   return (
     <div className="flex-1 flex flex-col px-4 pb-6 overflow-y-auto">
+      {/* Pro expired banner */}
+      {subscription.status === "pro_expired" && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-3 px-3 py-2.5 rounded-xl bg-loss/10 border border-loss/20 flex items-center gap-2 cursor-pointer"
+          onClick={onPaywall}
+        >
+          <Crown className="w-4 h-4 text-loss shrink-0" />
+          <div className="flex-1">
+            <p className="text-[11px] font-semibold text-loss">Подписка истекла</p>
+            <p className="text-[9px] text-loss/70">Нажмите, чтобы реактивировать Pro</p>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-loss" />
+        </motion.div>
+      )}
+
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -36,6 +58,11 @@ const HomeView = ({ onLaunchScreener }: HomeViewProps) => {
         <p className="text-xs text-muted-foreground mt-1.5 max-w-[260px] mx-auto leading-relaxed">
           AI-скриннер фондового рынка. Анализируем акции по 5 метрикам и выдаём единый score.
         </p>
+        {!isPro && (
+          <span className="inline-block mt-2 text-[9px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+            DEMO MODE
+          </span>
+        )}
       </motion.div>
 
       {/* Launch Screener Button */}
@@ -45,12 +72,29 @@ const HomeView = ({ onLaunchScreener }: HomeViewProps) => {
         transition={{ delay: 0.2, duration: 0.4 }}
         whileTap={{ scale: 0.97 }}
         onClick={onLaunchScreener}
-        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-6 shadow-lg active:brightness-90 transition-all"
+        className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-3 shadow-lg active:brightness-90 transition-all"
       >
         <Zap className="w-4 h-4" />
         Запустить скриннер
         <ArrowRight className="w-4 h-4" />
       </motion.button>
+
+      {/* Upgrade CTA for demo users */}
+      {!isPro && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={onPaywall}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs flex items-center justify-center gap-2 mb-6 shadow-md"
+        >
+          <Crown className="w-3.5 h-3.5" />
+          Перейти на Pro
+        </motion.button>
+      )}
+
+      {!isPro && <div className="mb-6" />}
 
       {/* Features Grid */}
       <motion.div

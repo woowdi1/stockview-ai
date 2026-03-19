@@ -13,13 +13,16 @@ import {
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { Ticker } from "@/data/tickers";
 import { generatePriceHistory } from "@/data/priceHistory";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import ScoreBadge from "./ScoreBadge";
 import MetricBar from "./MetricBar";
+import PremiumGate from "./PremiumGate";
 import { useState } from "react";
 
 interface TickerDetailProps {
   ticker: Ticker;
   onBack: () => void;
+  onPaywall?: () => void;
 }
 
 const PERIODS = ["1Н", "1М", "3М", "6М", "1Г"] as const;
@@ -32,11 +35,16 @@ const metricInfo = [
   { key: "stability" as const, label: "Stability", icon: Shield, desc: "Финансовая устойчивость" },
 ];
 
-const TickerDetail = ({ ticker, onBack }: TickerDetailProps) => {
+const TickerDetail = ({ ticker, onBack, onPaywall }: TickerDetailProps) => {
   const [period, setPeriod] = useState("1М");
+  const { isPro } = useSubscription();
   const isPositive = ticker.change >= 0;
   const priceData = generatePriceHistory(ticker, 30);
   const chartColor = isPositive ? "hsl(160, 84%, 44%)" : "hsl(0, 72%, 55%)";
+
+  // Demo users see only 2 metrics
+  const visibleMetrics = isPro ? metricInfo : metricInfo.slice(0, 2);
+  const lockedMetrics = isPro ? 0 : metricInfo.length - 2;
 
   return (
     <motion.div
@@ -167,7 +175,7 @@ const TickerDetail = ({ ticker, onBack }: TickerDetailProps) => {
           Детальные метрики
         </h3>
         <div className="glass rounded-xl p-3.5 space-y-3">
-          {metricInfo.map(({ key, label, icon: Icon, desc }) => (
+          {visibleMetrics.map(({ key, label, icon: Icon, desc }) => (
             <div key={key}>
               <div className="flex items-center gap-2 mb-1.5">
                 <Icon className="w-3 h-3 text-primary" />
@@ -177,6 +185,14 @@ const TickerDetail = ({ ticker, onBack }: TickerDetailProps) => {
               <MetricBar label="" value={ticker.metrics[key]} />
             </div>
           ))}
+
+          {/* Premium gate for remaining metrics */}
+          {lockedMetrics > 0 && onPaywall && (
+            <PremiumGate
+              feature={`Ещё ${lockedMetrics} метрики`}
+              onUpgrade={onPaywall}
+            />
+          )}
         </div>
       </div>
 
