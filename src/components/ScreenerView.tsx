@@ -1,20 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown, CheckCircle2, Lock } from "lucide-react";
 import TickerCard from "@/components/TickerCard";
 import ScanningAnimation from "@/components/ScanningAnimation";
+import PremiumGate from "@/components/PremiumGate";
 import { mockTickers, Ticker } from "@/data/tickers";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const SECTORS = ["All", "Technology", "Healthcare", "Finance", "Consumer"];
+const DEMO_LIMIT = 3;
 
 interface ScreenerViewProps {
   onSelectTicker?: (ticker: Ticker) => void;
+  onPaywall?: () => void;
 }
 
-const ScreenerView = ({ onSelectTicker }: ScreenerViewProps) => {
+const ScreenerView = ({ onSelectTicker, onPaywall }: ScreenerViewProps) => {
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState("All");
   const [scanning, setScanning] = useState(true);
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     const timer = setTimeout(() => setScanning(false), 2800);
@@ -31,6 +36,9 @@ const ScreenerView = ({ onSelectTicker }: ScreenerViewProps) => {
       return matchSearch && matchSector;
     })
     .sort((a, b) => b.score - a.score);
+
+  const visibleTickers = isPro ? filtered : filtered.slice(0, DEMO_LIMIT);
+  const lockedCount = isPro ? 0 : Math.max(0, filtered.length - DEMO_LIMIT);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -66,6 +74,21 @@ const ScreenerView = ({ onSelectTicker }: ScreenerViewProps) => {
                 Анализ завершён · {mockTickers.length} тикеров оценено
               </span>
             </motion.div>
+
+            {/* Demo mode notice */}
+            {!isPro && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.15 }}
+                className="mx-4 mb-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2"
+              >
+                <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+                <span className="text-[10px] text-amber-500 font-mono">
+                  Демо: показано {DEMO_LIMIT} из {filtered.length} тикеров
+                </span>
+              </motion.div>
+            )}
 
             {/* Search & Filters */}
             <div className="px-4 pt-1 pb-2 space-y-2.5">
@@ -114,9 +137,18 @@ const ScreenerView = ({ onSelectTicker }: ScreenerViewProps) => {
 
             {/* Ticker list */}
             <div className="flex-1 px-4 pb-6 space-y-2.5 overflow-y-auto">
-              {filtered.map((ticker, i) => (
+              {visibleTickers.map((ticker, i) => (
                 <TickerCard key={ticker.symbol} ticker={ticker} index={i} onSelect={onSelectTicker} />
               ))}
+
+              {/* Locked tickers gate */}
+              {lockedCount > 0 && onPaywall && (
+                <PremiumGate
+                  feature={`Ещё ${lockedCount} тикеров`}
+                  onUpgrade={onPaywall}
+                />
+              )}
+
               {filtered.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
