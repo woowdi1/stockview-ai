@@ -58,7 +58,8 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const BotPreview = ({ onBack, onOpenMiniApp }: BotPreviewProps) => {
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [started, setStarted] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(2);
