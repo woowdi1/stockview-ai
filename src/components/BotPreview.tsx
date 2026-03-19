@@ -58,10 +58,16 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const BotPreview = ({ onBack, onOpenMiniApp }: BotPreviewProps) => {
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [started, setStarted] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(2);
+
+  const handleStart = () => {
+    setStarted(true);
+    setMessages([WELCOME_MESSAGE]);
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -223,57 +229,105 @@ const BotPreview = ({ onBack, onOpenMiniApp }: BotPreviewProps) => {
         </div>
       </div>
 
-      {/* Chat area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-3 py-3 space-y-2"
-        style={{ background: "hsl(210, 15%, 92%)" }}
-      >
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} onButton={handleButton} />
-        ))}
+      {!started ? (
+        /* Pre-start welcome screen */
+        <div
+          className="flex-1 flex flex-col items-center justify-center px-6"
+          style={{ background: "hsl(210, 15%, 92%)" }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center text-center"
+          >
+            <div className="w-20 h-20 rounded-full bg-[hsl(210,50%,50%)] flex items-center justify-center mb-4 shadow-lg">
+              <Bot className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-800">{BOT_NAME}</h2>
+            <p className="text-xs text-gray-500 font-mono mt-0.5">{BOT_USERNAME}</p>
+            <p className="text-sm text-gray-600 mt-4 leading-relaxed max-w-[260px]">
+              AI-скриннер фондового рынка. Анализирую акции по 5 метрикам и выдаю единый Score.
+            </p>
+            <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+              {["📊 Скрининг акций", "⭐ Pro-аналитика", "📱 Mini App"].map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[10px] px-2.5 py-1 rounded-full bg-white text-gray-600 shadow-sm border border-gray-100"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <p className="text-[10px] text-gray-400 mt-5 font-mono">
+              12.4K подписчиков · бот
+            </p>
+          </motion.div>
+        </div>
+      ) : (
+        /* Chat area */
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-3 py-3 space-y-2"
+          style={{ background: "hsl(210, 15%, 92%)" }}
+        >
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} onButton={handleButton} />
+          ))}
 
-        {/* Typing indicator */}
-        <AnimatePresence>
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex items-end gap-1.5"
-            >
-              <div className="w-7 h-7 rounded-full bg-[hsl(210,50%,50%)] flex items-center justify-center shrink-0">
-                <Bot className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div className="bg-white rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
-                <div className="flex gap-1">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                    />
-                  ))}
+          {/* Typing indicator */}
+          <AnimatePresence>
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-end gap-1.5"
+              >
+                <div className="w-7 h-7 rounded-full bg-[hsl(210,50%,50%)] flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-white" />
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <div className="bg-white rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
+                  <div className="flex gap-1">
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
-      {/* Input bar (decorative) */}
-      <div className="bg-white border-t border-gray-200 px-3 py-2 flex items-center gap-2">
-        <input
-          type="text"
-          placeholder="Сообщение..."
-          disabled
-          className="flex-1 h-9 px-3 rounded-full bg-gray-100 text-sm text-gray-500 placeholder:text-gray-400"
-        />
-        <button disabled className="w-9 h-9 rounded-full bg-[hsl(210,50%,45%)] flex items-center justify-center opacity-40">
-          <Send className="w-4 h-4 text-white" />
-        </button>
-      </div>
+      {/* Bottom bar: START button or input */}
+      {!started ? (
+        <div className="bg-white border-t border-gray-200 px-4 py-3">
+          <button
+            onClick={handleStart}
+            className="w-full py-3 rounded-xl bg-[hsl(210,50%,45%)] text-white font-semibold text-sm active:brightness-90 transition-all shadow-md"
+          >
+            СТАРТ
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white border-t border-gray-200 px-3 py-2 flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Сообщение..."
+            disabled
+            className="flex-1 h-9 px-3 rounded-full bg-gray-100 text-sm text-gray-500 placeholder:text-gray-400"
+          />
+          <button disabled className="w-9 h-9 rounded-full bg-[hsl(210,50%,45%)] flex items-center justify-center opacity-40">
+            <Send className="w-4 h-4 text-white" />
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
