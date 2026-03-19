@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
-import { Activity, TrendingUp, Crown, User } from "lucide-react";
+import { Activity, TrendingUp, Crown, User, Bot } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 interface AppHeaderProps {
   onStatus?: () => void;
   onPaywall?: () => void;
+  onBotPreview?: () => void;
 }
 
-const AppHeader = ({ onStatus, onPaywall }: AppHeaderProps) => {
+const AppHeader = ({ onStatus, onPaywall, onBotPreview }: AppHeaderProps) => {
   const { isPro } = useSubscription();
 
   return (
@@ -30,7 +31,16 @@ const AppHeader = ({ onStatus, onPaywall }: AppHeaderProps) => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Bot preview button */}
+          <button
+            onClick={onBotPreview}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary hover:bg-accent transition-colors"
+            title="Превью бота"
+          >
+            <Bot className="w-3 h-3 text-muted-foreground" />
+          </button>
+
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10">
             <Activity className="w-3 h-3 text-primary animate-pulse-glow" />
             <span className="text-[10px] font-mono font-medium text-primary">LIVE</span>

@@ -6,14 +6,17 @@ import ScreenerView from "@/components/ScreenerView";
 import TickerDetail from "@/components/TickerDetail";
 import PaywallView from "@/components/PaywallView";
 import StatusView from "@/components/StatusView";
+import BotPreview from "@/components/BotPreview";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Ticker } from "@/data/tickers";
 
-type View = "home" | "screener" | "detail" | "paywall" | "status";
+type View = "home" | "screener" | "detail" | "paywall" | "status" | "bot";
 
 const Index = () => {
   const [view, setView] = useState<View>("home");
   const [prevView, setPrevView] = useState<View>("home");
   const [selectedTicker, setSelectedTicker] = useState<Ticker | null>(null);
+  const { activate } = useSubscription();
 
   const navigate = (to: View) => {
     setPrevView(view);
@@ -35,12 +38,20 @@ const Index = () => {
     navigate("home");
   };
 
+  const handleOpenMiniApp = (mode: "demo" | "premium") => {
+    if (mode === "premium") activate();
+    navigate("home");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
-      <AppHeader
-        onStatus={() => navigate("status")}
-        onPaywall={() => navigate("paywall")}
-      />
+      {view !== "bot" && (
+        <AppHeader
+          onStatus={() => navigate("status")}
+          onPaywall={() => navigate("paywall")}
+          onBotPreview={() => navigate("bot")}
+        />
+      )}
 
       <AnimatePresence mode="wait">
         {view === "home" && (
@@ -122,6 +133,21 @@ const Index = () => {
             <StatusView
               onBack={() => navigate("home")}
               onPaywall={() => navigate("paywall")}
+            />
+          </motion.div>
+        )}
+        {view === "bot" && (
+          <motion.div
+            key="bot"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 flex flex-col"
+          >
+            <BotPreview
+              onBack={() => navigate("home")}
+              onOpenMiniApp={handleOpenMiniApp}
             />
           </motion.div>
         )}
